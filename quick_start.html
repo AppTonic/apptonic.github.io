@@ -1,0 +1,318 @@
+---
+layout: page
+title: Quick Start
+nav_title: Quick Start
+nav_order: 2
+permalink: /quick-start/
+---
+<h3>1. Install NuGet package</h3>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+    <p>
+        The best way to get AppTonic is to install it from <a href="{{ site.nuget_url }}">nuget.org</a> using NuGet.exe 
+        or the package manager console. You can also right click on your project or solution in Visual Studio and click 
+        "Manage NuGet Packages..." and search for <em>AppTonic</em>.
+    </p>
+    </div>
+    <div class="col-md-6">
+<kbd class="nuget">
+PM> Install-Package AppTonic
+</kbd>
+    </div>
+</div>
+<h3>2. Create a request message</h3>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <p>
+            Messages are at the heart of AppTonic. For this guide, we'll be creating a message with just a simple 
+            <acronym title="Plain Old CLR Object">POCO</acronym> implementing 
+            the <code>IRequest</code> marker interface from the AppTonic package. 
+        </p>
+        <p>
+            The most fundamental request interfaces are <code>IRequest</code> and <code>IRequest&lt;TResponse&gt;</code>, 
+            each indicating whether or not there is a response expected. While no additional request types are functionally nescessary, 
+            marker interfaces for commands and queries, as well as handling mechanisms for async requests are included to reduce boilerplate
+            and create intention-revealing application code.
+    </div>
+    <div class="col-md-6">
+{% highlight csharp %}
+public class CreateUser : IRequest
+{
+    public string Name { get; set; }
+}
+{% endhighlight %}
+    </div>
+</div>
+
+<div class="bs-callout bs-callout-info">
+<h4>Choose your style.</h4>
+<p>AppTonic supports two styles of composing your application. Take advantage of either your dependency injection container and/or use partial function application. We'll keep our focus on one style for the rest of the guide.</p>
+</div>
+<ul class="nav nav-tabs nav-justified" role="tablist">
+<li class="active"><a href="#dependency-injection" class="enabled-tab" role="tab" data-toggle="tab">Using Dependency Injection</a></li>
+<li><a href="#partial-application" class="enabled-tab" role="tab" data-toggle="tab">Using Functions/Partial Application</a></li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane fade in active" id="dependency-injection">
+<h3>3. Implement a message handler (using dependency injection)</h3>
+<hr />
+<div class="row">
+<div class="col-md-6">
+    <p>
+        Add the <code>IHandle&lt;TRequest&gt;</code> interface to a class and implement your desired 
+        application logic in the <code>Handle(CreateUser request)</code> method.
+        This class is the <em>application service</em> for handling this particular request.     </p>
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h3 class="panel-title"><acronym title="Single Responsibility Principle">SRP</acronym> <acronym title="For The Win">FTW</acronym></h3>
+        </div>
+        <div class="panel-body">
+            You can easily have just one class per message handler, encouraing clean code. Or, when it makes sense, combine a few message 
+            handlers on the same service. Since the design of your message handlers is decoupled from the service 
+            contract (defined by your message/request), you're free to change this as time goes on.
+        </div>
+    </div>
+
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h3 class="panel-title">Composition Over Inheritance</h3>
+        </div>
+        <div class="panel-body">
+            Notice there is no base class to inherit from, and you are liberated from any inheritance 
+            your UI or web framework may impose on you, thus avoiding the pains and dangers of the 
+            <a href="http://michaelfeathers.typepad.com/michael_feathers_blog/2013/01/the-framework-superclass-anti-pattern.html">
+            Framework Superclass Anti-Pattern</a>.
+        </div>
+    </div>
+</div>
+<div class="col-md-6">
+{% highlight csharp %}
+public class UserService : IHandle<CreateUser>
+{
+    public void Handle(CreateUser request)
+    {
+        var user = new User { Name = request.Name };
+        _userRepository.Add(user);
+        _userRepository.Save();
+        _logger.Info("UserService: User Created");
+    }
+
+    // Rest of class ommitted for brevity
+}
+{% endhighlight %}
+</div>
+</div>
+<h3>4. Initialize and configure the AppDispatcher (for use with dependency injection)</h3>
+<hr />
+<div class="row">
+<div class="col-md-6">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h3 class="panel-title">Dependency Injection Prerequisites</h3>
+        </div>
+        <div class="panel-body">
+            In addition to your desired dependency injection framework, you will need to install the AppTonic.CommonServiceLocator package.
+            <br/><br/>
+            <kbd class="nuget">PM> Install-Package AppTonic.CommonServiceLocator</kbd>
+        </div>
+    </div>
+    <p>
+        Our first step before we configure the <code>AppDispatcher</code> instance is to
+        have our dependency injection framework perform its usual composition, including resolving any our handler interfaces with its implementation. 
+        In this case, resolving <code>IHandle&lt;CreateUser&gt;</code> with our <code>UserService</code> application service. 
+        We also need to create the <a href="https://www.nuget.org/packages?q=common+service+locator+adapter">Common Service Locator adapter</a>, 
+        using the appropriate NuGet package for our preferred dependency injection framework.
+    </p>
+
+    </div>
+<div class="col-md-6">
+{% highlight csharp %}
+class Program
+{
+    static void Main()
+    {
+        // Configure your dependency injection container (Unity in this example)
+        var container = new UnityContainer();
+        container.RegisterType<IUserRepository, InMemoryUserRepository>();
+        container.RegisterType<ILogger, ConsoleLogger>();
+
+        // Register our application service - this process can automated, 
+        // depending on your dependency injection framework
+        container.RegisterType(
+            typeof(IHandle<CreateUser>), 
+            typeof(UserService));
+
+        // Create common service locator adapter
+        var unityServiceLocatorAdapter = new UnityServiceLocator(container);
+
+        // Initilaize the AppDispatcher
+        AppDispatcher.Initialize(app =>
+        {
+            app.UseCommonServiceLocator(unityServiceLocatorAdapter);
+        });
+
+        // Create a request
+        var request = new CreateUser { Name = "Jane Smith" };
+
+        // Dispatch your message to your service
+        AppDispatcher.Handle(request);
+    }
+}
+{% endhighlight %}
+</div>
+</div>
+</div><!-- End dependency injection -->
+
+<div class="tab-pane fade" id="partial-application">
+<h3>3. Implement a message handler (for use with partial application)</h3>
+<hr />
+<div class="row">
+<div class="col-md-6">
+    <p>
+        Although we haven't seen where partial application comes in yet, all we need to do to handle our message
+        is to create a method that our request <code>CreateUser</code> as a parameter, along with any dependencies.
+        That's it - no additional interfaces to implement.
+    </p>
+
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h3 class="panel-title">Testability <acronym title="For The Win">FTW</acronym></h3>
+        </div>
+        <div class="panel-body">
+            Static classes may make you cringe - but we're not using any static variables here. This style is
+            normal in languages, such as F#, where first-class functions are grouped into modules.
+            Aside from any statefulness our dependencies may have, our method is compeltely stateless. It's
+            incredibly testable - our dependicies are clearly deterermined via our method parameters and 
+            are easily faked or mocked. Again, no framework base class or UI dependencies to make testing our software difficult.
+        </div>
+    </div>
+</div>
+<div class="col-md-6">
+{% highlight csharp %}
+public static class UserServiceModule
+{
+    public static void CreateUser(CreateUserRequest request, 
+        Func<IUserRepository> userRepositoryFactory, ILogger logger)
+    {
+        using (var userRepository = userRepositoryFactory())
+        {
+            var user = User.Create(request);
+            userRepository.Add(user);
+            userRepository.Save();
+            logger.Info("UserServiceModule: User Created");
+        }
+    }
+}
+{% endhighlight %}
+</div>
+</div>
+<h3>4. Initialize and configure the AppDispatcher (using partial appliction)</h3>
+<hr />
+<div class="row">
+<div class="col-md-6">
+    <p>
+        Configuring our <code>AppDispatcher</code> without dependecy injection is very simple. In this example,
+        the composition root of our application, we create any instances or define factories that will be used for our application.
+        Finnally, all that is required is that we the appropariate <code>RegisterHandler</code> method on our 
+        configurator object, passing in closure that calls our application service, creating a partially applied function that
+        is registered in our <code>AppDispatcher</code> instance. Now we can simple call <code>AppDispatcher.Handle</code> and pass
+        in our request, and it will be handled using the dependencies passed in by the function closure we initially registered.
+    </p>
+</div>
+<div class="col-md-6">
+{% highlight csharp %}
+class Program
+{
+    static void Main()
+    {
+        // Look ma, no dependency injection container! 
+        var logger = new ConsoleLogger();
+        Func<IUserRepository> userRepositoryFactory = 
+            () => new InMemoryUserRepository();
+
+        AppDispatcher.Initialize(app =>
+        {
+            app.RegisterHandler<CreateUser>(createUserRequest =>
+            {
+                UserServiceModule.CreateUser(createUserRequest, 
+                    userRepositoryFactory, logger);
+            });
+        });
+
+        var request = new CreateUser { Name = "Jane Smith" };
+
+        AppDispatcher.Handle(request);
+    }
+}
+{% endhighlight %}
+</div>
+</div>
+</div><!-- End partial application -->
+</div>
+<h3>5. ASP.NET Web API Example (using either approach)</h3>
+<hr />
+<div class="col-md-6">
+<p>
+    Using the AppDispatcher in our program is easy. We can use the <code>AppDispatcher</code> 
+    static class helper (as seen here), or we resolve an instance of the <code>IAppDispatcher</code> 
+    from our dependency injection framework.
+</p>
+
+
+<div class="panel panel-info">
+        <div class="panel-heading">
+            <h3 class="panel-title">AppDispatcher creation options</h3>
+        </div>
+        <div class="panel-body">
+            You can use the <code>AppDispatcher.Initialize</code> method, which creates a single instance of 
+            the AppDispatcher accessible from <code>AppDisptacher.Instance</code>, or you can use the 
+            <code>AppDisptacherFactory.Create</code> method, which is used in the exact same manner as the 
+            <code>AppDispatcher.Initialize</code> method, to create multiple <code>IAppDispatcher</code>
+            instances, or to create an instance for injection into your IoC framework.
+<br /><br />
+{% highlight csharp %}
+
+AppDispatcher.Initialize(app => {
+    // configuration
+})
+
+IAppDispatcher dispatcherOne = AppDispatcher.Instance;
+
+
+IAppDispatcher dispatcherTwo = AppDispatcherFactory.Create(app => {
+    // configuration
+})
+
+{% endhighlight %}
+
+        </div>
+    </div>
+</div>
+<div class="col-md-6">
+{% highlight csharp %}
+public class UserController : ApiController
+{
+    public void Post(CreateUser request) {
+        AppDispatcher.Handle(request);
+    }
+}
+{% endhighlight %}
+
+{% highlight csharp %}
+public class UserController : ApiController
+{
+    private readonly IAppDispatcher _app;
+
+    public UserController(IAppDispatcher app) {
+        _app= app;
+    }
+
+    public void Post(CreateUser request) {
+        _app.Handle(request);
+    }
+}
+{% endhighlight %}
+</div>
+</div>

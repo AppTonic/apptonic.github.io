@@ -1,0 +1,18 @@
+# Site settings
+title: AppTonic
+#email: craigsmitham@gmail.com
+description: Ultralight framework for building SOLID Application Services for Domain Driven Design and Transaction Script flavored architectures.
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: "http://apptonic.github.io" # the base hostname & protocol for your site
+#twitter_username: jekyllrb
+github_username: AppTonic
+github_url: https://github.com/AppTonic/AppTonic
+nuget_url: https://nuget.org/packages/AppTonic
+appveyor_url: https://ci.appveyor.com/project/CraigSmitham/apptonic
+
+# Build settings
+markdown: kramdown
+highlighter: pygments
+
+sass:
+    sass_dir: _sass

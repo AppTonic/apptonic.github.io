@@ -1,0 +1,135 @@
+---
+# this ensures Jekyll reads the file to be transformed into CSS later
+# only Main files contain this front matter, not partials.
+---
+
+@import "bootstrap";
+@import url("http://fonts.googleapis.com/css?family=Raleway:400,700,900");
+
+@import url("http://fonts.googleapis.com/css?family=Lato:400,900");
+@import url("http://fonts.googleapis.com/css?family=Open+Sans:800&subset=latin,greek");
+@import url("http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,300,600,400");
+
+$lato: 'Lato', sans-serif;
+$raleway: 'Raleway', sans-serif;
+$open-sans: 'Open Sans', sans-serif;
+$default-font-family: $open-sans;
+$header-font-family: $open-sans;
+
+@import "solid";
+
+@import "syntax";
+
+code {
+  background-color:#ccc;
+  color:black;
+}
+
+.highlight {
+  background:transparent;
+}
+.item {
+  p {
+    color:#eee;
+  }
+}
+
+.welcome-text {
+  code {
+    background-color: transparent;
+color: white;
+padding: 0;
+font-size: 100%;
+border: none;
+position: relative;
+top: -1px;
+  }
+
+  p {
+  color:white;
+
+    &.larger {
+
+  font-size:2em;
+    }
+  font-size:1.4em;
+  line-height:1.6em;
+  margin-bottom:20px;
+  }
+}
+.item-content {
+height:400px;
+}
+.carousel-control {
+  display: none;
+}
+.carousel-caption {
+  left:5%;
+  right:5%;
+}
+
+
+h3.doc-title { 
+  position:relative; 
+  span { position:absolute; top:-100px;}
+}
+
+
+.logo {
+  font-family: $open-sans;
+  .app {
+    font-weight:300;
+
+  }
+  .func {
+    font-weight: 600;
+  }
+  .func-lambda {
+    font-weight: 800;
+  }
+}
+
+.navbar-default .navbar-nav > li > a {
+  font-size:16px;
+  font-weight: normal;
+  text-transform: uppercase;
+}
+
+kbd.nuget {
+  display:block;
+  padding:1em; 
+}
+ 
+/* Side notes for calling out things
+-------------------------------------------------- */
+ 
+/* Base styles (regardless of theme) */
+.bs-callout {
+  margin: 20px 0;
+  padding: 15px 30px 15px 15px;
+  border-left: 5px solid #eee;
+}
+.bs-callout h4 {
+  margin-top: 0;
+}
+.bs-callout p:last-child {
+  margin-bottom: 0;
+}
+.bs-callout code,
+.bs-callout .highlight {
+  background-color: #fff;
+}
+ 
+/* Themes for different contexts */
+.bs-callout-danger {
+  background-color: #fcf2f2;
+  border-color: #dFb5b4;
+}
+.bs-callout-warning {
+  background-color: #fefbed;
+  border-color: #f1e7bc;
+}
+.bs-callout-info {
+  background-color: #f0f7fd;
+  border-color: #d0e3f0;
+}

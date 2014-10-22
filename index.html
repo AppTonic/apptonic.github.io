@@ -1,0 +1,185 @@
+---
+layout: default
+title: "Home"
+nav_title: "Home"
+nav_order: 1
+permalink: /
+---
+<div id="blue">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-7">
+        <div class="welcome-text">
+          <p class="larger">
+          AppTonic is a lightweight .NET framework for building loosely coupled application services.
+          </p>
+          <p>
+          Using a simple message-based mediator called the <code>AppDispatcher</code>, AppTonic seperates your application logic from your web framework, UI, or messaging system.
+          </p>
+          <p>
+          The resulting application logic is organized by use case, not how methods are grouped on an interface &mdash; creating easily testable, maintainable and extensiable code.
+          </p>
+        </div>
+        <ul class="list-inline">
+          <li>
+            <a href="/quick-start" class="btn btn-primary btn-lg">
+            Quick Start</a>
+          </li>
+          <li>
+            <a href="{{ site.github_url }}" class="btn btn-primary btn-lg"> <i class="fa fa-github"></i>
+              &nbsp;
+            Source Code</a>
+          </li>
+          <li><a href="{{ site.appveyor_url }}"><img src="https://ci.appveyor.com/api/projects/status/whjify5wd52vq9vv?svg=true" alt="Build Status"/></a></li>
+          <li>
+            <a href="{{ site.nuget_url }}"><img src="http://img.shields.io/nuget/v/AppTonic.svg?style=flat" alt="NuGet"/></a>
+          </li>
+        </ul>
+      </div>
+      <div class="col-lg-5">
+        <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+          <!-- Indicators -->
+          <ol class="carousel-indicators">
+            <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+            <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+            <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+          </ol>
+          <!-- Wrapper for slides -->
+          <div class="carousel-inner">
+            <div class="item active">
+              <div class="item-content">
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+{% highlight csharp %}
+public class CreateUser : IRequest
+{
+    public string Name { get; set; }
+}
+{% endhighlight %}
+            </div>
+            <div class="carousel-caption">
+              <p>Create message-based APIs.</p>
+            </div>
+          </div>
+          <div class="item ">
+            <div class="item-content">
+              <br />
+              <br />
+              <br />
+              <br />
+{% highlight csharp %}
+public class UserService : IHandle<CreateUser>
+{
+    public void Handle(CreateUser request)
+    {
+        var user = new User { Name = request.Name };
+        _userRepository.Add(user);
+        _userRepository.Save();
+        _logger.Info("UserService: User Created");
+    }
+}
+{% endhighlight %}
+          </div>
+          <div class="carousel-caption">
+            <p>Build testable and maintable application logic.</p>
+          </div>
+        </div>
+
+<div class="item ">
+            <div class="item-content">
+
+{% highlight csharp %}
+public class UserController : ApiController
+{
+    private readonly IAppDispatcher _app;
+
+    public UserController(IAppDispatcher app)
+    {
+        _app = app;
+    }
+
+    public IHttpActionResult CreateUser(CreateUser request)
+    {
+        _app.Handle(request);
+        return Ok();
+    }
+}
+{% endhighlight %}
+
+          </div>
+          <div class="carousel-caption">
+            <p>Keep application logic out of your web framework or UI layer.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+<div class="container mtb">
+<div class="row">
+<div class="col-md-4">
+  <h4><i class="fa fa-thumbs-o-up"></i>&nbsp;&nbsp;SOLID</h4>
+  <p>
+  AppTonic enables clean, <a href="http://alistair.cockburn.us/Hexagonal+architecture">hexagonal architecture</a> that seperates your application logic from UI and infrastructure concerns.
+  </p>
+</div>
+<div class="col-md-4">
+  <h4><i class="fa fa-flask"></i>&nbsp;&nbsp;Enables Testability</h4>
+  <p>
+  Since your application logic is now free from your UI and infrastructure code, subcutaneous functional testing is a breeze.
+  </p>
+</div>
+<div class="col-md-4">
+  <h4><i class="fa fa-cloud"></i>&nbsp;&nbsp;Cloud and Web Ready</h4>
+  <p>
+  Apps that communicate through messages - such as withHTTP requests or message queues - are a particularly good fit for AppTonic.
+  </p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4">
+  <h4><i class="fa fa-heart-o"></i>&nbsp;&nbsp;Functionaly Fluent</h4>
+  <p>
+  Provides first class support for composing your app using partial function application.
+  </p>
+</div>
+<div class="col-md-4">
+  <h4><i class="fa fa-envelope-o"></i>&nbsp;&nbsp;Meaningful Messages</h4>
+  <p>
+  Valuing message handling over method calls enables cohesive application logic and encourages rich domain modeling.
+  </p>
+</div>
+<div class="col-md-4">
+  <h4><i class="fa fa-building-o"></i>&nbsp;&nbsp;Architecture Agnostic</h4>
+  <p>
+  Use AppTonic to power Domain Driven Design style application services or for simple Transaction Script flavored architectures.
+  </p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4">
+  <h4><i class="fa fa-paper-plane-o"></i>&nbsp;&nbsp;Lightweight</h4>
+  <p>
+  By keeping features simple, flexible and light, AppTonic makes minimal assumptions about your architecture, making it a good fit for different approaches.</p>
+</div>
+<div class="col-md-4">
+  <h4><i class="fa fa-cubes"></i>&nbsp;&nbsp;B.Y.O.IoC</h4>
+  <p>
+  Although use of an IoC framework is a completely optional, by supplying a custom adapter or using Common Service Locator extension you can get up and running in seconds with your preferred framework.
+  </p>
+</div>
+<div class="col-md-4">
+  <h4><i class="fa fa-gears"></i>&nbsp;&nbsp;Pretty Pipelines</h4>
+  <p>
+  Cross-cutting concerns, such as logging, error handling, retry logic, and more can be added with or without an IoC framework.
+  </p>
+</div>
+</div>
+</div>
+<!-- <a href="{{ site.github_url }}"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png"></a> -->
